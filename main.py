@@ -12,7 +12,8 @@ if __name__ == "__main__":
     if switch == 'find_links':
       LinkCrawler(CITIES).start()
     elif switch == 'extract_pages':
-        DataCrawler().start()
+        crawl = DataCrawler()
+        crawl.start()
     else:
         raise SystemError
 

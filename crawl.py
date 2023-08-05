@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import requests
 from bs4 import BeautifulSoup
 from config import BASE_LINK, CITIES
-from parser import AdvertisementPageParser
+from parser_page import AdvertisementPageParser
 
 
 class BaseCrawler(ABC):
@@ -19,7 +19,7 @@ class BaseCrawler(ABC):
     @staticmethod
     def get_pages(url,start=None):
         try:
-            if start != 0:
+            if start != 0 and start != None:
                 response = requests.get(url).text
                 chck_res = requests.get(url).text
                 if response == chck_res:
@@ -96,11 +96,13 @@ class DataCrawler(BaseCrawler):
     def __load_links():
         with open('storage/data.json', 'r') as f:
             links = json.loads(f.read())
+            return links
 
     def start(self):
         for link in self.links:
             response = self.get_pages(link)
             data = self.parser.parse(response.text)
+            print(data)
 
     def store(self,data):
         pass
