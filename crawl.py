@@ -13,7 +13,7 @@ class BaseCrawler(ABC):
         pass
 
     @abstractmethod
-    def store(self,data):
+    def store(self,data,store=False):
         pass
 
     @staticmethod
@@ -102,7 +102,7 @@ class DataCrawler(BaseCrawler):
         for link in self.links:
             response = self.get_pages(link)
             data = self.parser.parse(response.text)
-            print(data)
+            self.store()
 
     def store(self,data):
         pass
