@@ -9,22 +9,33 @@ class AdvertisementPageParser:
         self.data =None
     @property
     def title(self):
-        return  self.soup.find('span',attrs={'id':'titletextonly'})
+        title =  self.soup.find('span',attrs={'id':'titletextonly'})
+        if title:
+            return title.text
+        return None
 
     @property
     def price(self):
-        return self.soup.find('span',attrs={'class':'price'})
+        # price =  self.soup.find('span',attrs={'class':'price'})
+        price_selector = 'body > section > section > h1 > span > span.price'
+        price = self.soup.select_one(price_selector)
+        if price:
+            return price.text
+        return None
 
     @property
     def body(self):
-        return self.soup.select_one('#postingbody')
+        body = self.soup.select_one('#postingbody')
+        if body:
+            return body.text
+        return None
 
     @property
     def post_id(self):
         post_id_selector = 'body > section > section > section > div.postinginfos > p:nth-child(1)'
-        post_id_tag = self.soup.select_one(post_id_selector).text
+        post_id_tag = self.soup.select_one(post_id_selector)
         if post_id_tag:
-            post_id = post_id_tag.replace('Id publi: ','')
+            post_id = post_id_tag.text.replace('Id publi: ','')
             return post_id
         else:
             return None
@@ -49,7 +60,7 @@ class AdvertisementPageParser:
     def parse(self,html_data):
         self.soup = BeautifulSoup(html_data,'html.parser')
         self.data = dict(
-            title = self.title.text, price = self.price.text, body = self.body.text,post_id = self.post_id,
+            title = self.title, price = self.price, body = self.body,post_id = self.post_id,
             created_time = self.create_time, modified_time = self.modified_time
         )
 

@@ -9,11 +9,11 @@ from parser_page import AdvertisementPageParser
 
 class BaseCrawler(ABC):
     @abstractmethod
-    def start(self):
+    def start(self,store=False):
         pass
 
     @abstractmethod
-    def store(self,data,store=False):
+    def store(self,data,filename=None):
         pass
 
     @staticmethod
@@ -71,17 +71,19 @@ class LinkCrawler(BaseCrawler):
         print(len(set((final_list))))
         return final_list
 
-    def start(self):
+    def start(self,store=False):
         url_address = BASE_LINK
         adv_list = list()
         for city in self.cities:
             print("link of", city)
             links = self.start_crawl_city(url_address, city)
             adv_list.extend(links)
-        self.store([i.get('href') for i in adv_list])
+        if store:
+             self.store([i.get('href') for i in adv_list])
+        return adv_list
 
 
-    def store(self, data):
+    def store(self, data,*args):
         with open('storage/data.json','w') as f:
             json.dump(data,f, indent=2)
 
@@ -98,14 +100,16 @@ class DataCrawler(BaseCrawler):
             links = json.loads(f.read())
             return links
 
-    def start(self):
+    def start(self,store=False):
         for link in self.links:
             response = self.get_pages(link)
             data = self.parser.parse(response.text)
-            self.store()
+            if store:
+                self.store(data,data.get('post_id','sample'))
 
-    def store(self,data):
-        pass
+    def store(self,data,filename):
+        with open(f'storage/adv/{filename}.json', 'w') as f:
+            json.dump(data, f, indent=2)
 
 
 
