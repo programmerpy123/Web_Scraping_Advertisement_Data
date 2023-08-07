@@ -49,8 +49,8 @@ class BaseCrawler(ABC):
 
 class LinkCrawler(BaseCrawler):
     def __init__(self,cities):
-        self.cities = cities
         super().__init__()
+        self.cities = cities
 
 
     def find_links(self, doc, city):
@@ -90,35 +90,33 @@ class LinkCrawler(BaseCrawler):
             links = self.start_crawl_city(url_address, city)
             adv_list.extend(links)
         if store:
-             self.store([i.get('href') for i in adv_list])
+             self.store([{"url": i.get('href'), "flag": False} for i in adv_list])
         return adv_list
 
 
     def store(self, data,*args):
-        self.storage.store(data,'data')
+        self.storage.store(data,'advertisement_links')
 
 class DataCrawler(BaseCrawler):
 
     def __init__(self):
+         super(DataCrawler, self).__init__()
          self.links = self.__load_links()
          self.parser = AdvertisementPageParser()
-         super(DataCrawler, self).__init__()
 
-    @staticmethod
-    def __load_links():
-        with open('storage/data.json', 'r') as f:
-            links = json.loads(f.read())
-            return links
+    def __load_links(self):
+          return self.storage.load()
 
     def start(self,store=False):
         for link in self.links:
-            response = self.get_pages(link)
+            print(link)
+            response = self.get_pages(link['url'])
             data = self.parser.parse(response.text)
             if store:
                 self.store(data,data.get('post_id','sample'))
 
     def store(self,data,filename):
-        self.storage.store(data,filename)
+        self.storage.store(data,'advertisement_data')
 
 
 
