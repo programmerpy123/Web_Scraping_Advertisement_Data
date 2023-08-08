@@ -9,7 +9,7 @@ class StorageAbstract(ABC):
     def store(self,data,*args):
         pass
     @abstractmethod
-    def load(self):
+    def load(self,*args,**kwargs):
         pass
 
 
@@ -21,13 +21,35 @@ class MongoStorage(StorageAbstract):
         # collection = getattr(self.mongo.database,collection)
         collection = self.mongo.database[collection]
         if isinstance(data, list) and len(data) > 1:
-            collection.insert_many(data)
+             # change data['check_dup']=True
+            for da in data:
+                check = collection.find({'url': da["url"]})
+                if check != None:
+                    collection.insert_one(da)
+
+
+            # collection.insert_many(data)
         else:
             collection.insert_one(data)
             print(data['post_id'])
 
-    def load(self):
-        return self.mongo.database.advertisement_links.find()
+
+    def load(self,collection_name,filter_para=None):
+        collection_name = self.mongo.database[collection_name]
+        if filter_para is not  None:
+            return collection_name.find(filter_para)
+        return collection_name.find()
+
+
+
+
+    def update_flag(self, data):
+        """"""
+        self.mongo.database.advertisement_links.find_one_and_update(
+            {'_id': data['_id']},
+            {'$set': {'flag': True}}
+        )
+
 
 
 
@@ -45,3 +67,6 @@ class FileStorage(StorageAbstract):
         with open('storage/advertisement_links.json', 'r') as f:
             links = json.loads(f.read())
             return links
+
+    def update_flag(self):
+        pass

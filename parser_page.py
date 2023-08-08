@@ -57,11 +57,26 @@ class AdvertisementPageParser:
         else:
             return None
 
+    @property
+    def get_images(self):
+        check_has_image = self.soup.select_one('#thumbs')
+        if check_has_image:
+            images_links = check_has_image.find_all('a', attrs={'class': 'thumb'})
+            if images_links:
+                list_of_images = []
+                for link in images_links:
+                    list_of_images.append({
+                        "url": link.get('href'),
+                        "flag": False
+                    })
+                return list_of_images
+        return None
+
     def parse(self,html_data):
         self.soup = BeautifulSoup(html_data,'html.parser')
         self.data = dict(
             title = self.title, price = self.price, body = self.body,post_id = self.post_id,
-            created_time = self.create_time, modified_time = self.modified_time
+            created_time = self.create_time, modified_time = self.modified_time,images = self.get_images
         )
 
         return self.data

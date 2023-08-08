@@ -105,18 +105,62 @@ class DataCrawler(BaseCrawler):
          self.parser = AdvertisementPageParser()
 
     def __load_links(self):
-          return self.storage.load()
+          return self.storage.load('advertisement_links',{'flag': False})
 
     def start(self,store=False):
         for link in self.links:
             print(link)
             response = self.get_pages(link['url'])
-            data = self.parser.parse(response.text)
-            if store:
-                self.store(data,data.get('post_id','sample'))
+            if response:
+                    data = self.parser.parse(response.text)
+                    if store:
+                        self.store(data,data.get('post_id','sample'))
+
+                    self.storage.update_flag(link)
 
     def store(self,data,filename):
         self.storage.store(data,'advertisement_data')
 
+class ImageDownloader(BaseCrawler):
+    def __init__(self):
+        super(ImageDownloader, self).__init__()
+        self.advertisement_data = self.__load_advertisement_data()
+
+    @staticmethod
+    def get(url,stream=True):
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response
+        return None
+
+
+    def __load_advertisement_data(self):
+        return self.storage.load('advertisement_data')
+
+    def start(self,store=True):
+        for advertisement in self.advertisement_data:
+            counter = 0
+            for image in advertisement['images']:
+                if counter == 0:
+                    response = self.get(image['url'])
+                    if store:
+                        self.store(response,advertisement['post_id'],counter)
+            counter+=1
+
+
+
+    def store(self,data,filename,im_num):
+        filename = f'{filename}-{im_num}'
+
+
+        self.save_to_disk(data,filename)
+
+    def save_to_disk(self,response,filename):
+        with open(f'storage/images/{filename}.jpg','ab') as  f:
+            f.write(response.content)
+            for _ in response.iter_content(): # becharkh va response jadid begir
+                f.write(response.content)
+
+        print(filename)
 
 
