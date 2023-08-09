@@ -2,5 +2,4 @@ venv
 test.py
 storage/images
 storage/data.json
-login.py
 tt.py
