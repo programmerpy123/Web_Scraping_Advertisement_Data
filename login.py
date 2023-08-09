@@ -11,12 +11,12 @@ def start():
     # options.add_argument("--headless")
 
     driver = webdriver.Chrome(options=options)
-    login_advertisement(driver)
+    get_cookies(driver)
 
     return driver
 
 
-def login_advertisement(driver):
+def get_cookies(driver):
     driver.get(login_site_address)
     wait = WebDriverWait(driver, 10)
 
@@ -33,12 +33,6 @@ def login_advertisement(driver):
     login_button = wait.until(
         EC.element_to_be_clickable((By.XPATH, '/html/body/section/section/div/div[1]/form/div[3]/button[2]')))
     login_button.click()
-
-
-if __name__ == '__main__':
-    def login(status):
-        driver = start()
-        print("crawl  all link and close window")
-        # while True:
-        #     pass
-        driver.quit()
+    cookies =  driver.get_cookie()
+    driver.quit()
+    return cookies

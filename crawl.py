@@ -6,10 +6,11 @@ from bs4 import BeautifulSoup
 from config import BASE_LINK, CITIES, STORAGE_TYPE
 from parser_page import AdvertisementPageParser
 from store import FileStorage,MongoStorage
-
+from login import get_cookies
 class BaseCrawler(ABC):
     def __init__(self):
         self.storage = self.__set_storage()
+        self.cookies = get_cookies()
 
     @staticmethod
     def __set_storage():
@@ -27,17 +28,17 @@ class BaseCrawler(ABC):
         pass
 
     @staticmethod
-    def get_pages(url,start=None):
+    def get_pages(url,start=None,cookies=None):
         try:
             if start != 0 and start != None:
-                response = requests.get(url).text
-                chck_res = requests.get(url).text
+                response = requests.get(url,cookies= cookies).text
+                chck_res = requests.get(url, cookies =cookies).text
                 if response == chck_res:
                     return None
 
             elif start == None or start == 0:
                 try:
-                    return requests.get(url)
+                    return requests.get(url,cookies = cookies)
                 except requests.HTTPError:
                     return None
 
@@ -67,7 +68,7 @@ class LinkCrawler(BaseCrawler):
         start = 0
         final_list = []
         while True:
-            result = self.get_pages(url_address.format(city, str(start)),start)
+            result = self.get_pages(url_address.format(city, str(start)),start,self.cookies)
 
             if result == None:
                 break
@@ -110,7 +111,7 @@ class DataCrawler(BaseCrawler):
     def start(self,store=False):
         for link in self.links:
             print(link)
-            response = self.get_pages(link['url'])
+            response = self.get_pages(link['url'],cookies=self.cookies)
             if response:
                     data = self.parser.parse(response.text)
                     if store:
